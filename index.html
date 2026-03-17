@@ -1,0 +1,190 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>MopScan Store Grid</title>
+    <link rel="stylesheet" href="styles.css" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Space+Grotesk:wght@400;500;600&display=swap"
+      rel="stylesheet"
+    />
+  </head>
+  <body>
+    <main class="app">
+      <header class="hero">
+        <div>
+          <p class="eyebrow">Walmart + Sam's Club • Floor Safety</p>
+          <h1>MopScan Store Grid</h1>
+          <p class="subhead">
+            Build a store layout grid and track cleaned vs wet zones without using the camera.
+          </p>
+        </div>
+        <div class="hero-actions">
+          <label class="store-name">
+            Store Name
+            <input id="store-name" type="text" placeholder="Supercenter 214" />
+          </label>
+          <button id="save-layout" class="primary" type="button">Save Layout</button>
+          <button id="reset-layout" class="ghost" type="button">Reset Layout</button>
+        </div>
+      </header>
+
+      <section class="panel">
+        <div class="panel-head">
+          <div>
+            <h2>Store Layout Grid</h2>
+            <p class="muted">Paint tiles (floor, shelf, entry) and then mark cleaned or wet zones.</p>
+          </div>
+          <div class="status" id="layout-status">Layout: Unsaved</div>
+        </div>
+
+        <div class="toolbar">
+          <div class="tool-group">
+            <span class="tool-label">Mode</span>
+            <button class="tool-btn" data-mode="tile" id="mode-tile" type="button">Tile</button>
+            <button class="tool-btn" data-mode="status" id="mode-status" type="button">Status</button>
+          </div>
+          <div class="tool-group">
+            <span class="tool-label">Tool</span>
+            <button class="tool-btn" data-tool="brush" id="tool-brush" type="button">Brush</button>
+            <button class="tool-btn" data-tool="bucket" id="tool-bucket" type="button">Fill</button>
+            <button class="tool-btn" data-tool="rect" id="tool-rect" type="button">Rect</button>
+            <button class="tool-btn" data-tool="lasso" id="tool-lasso" type="button">Lasso</button>
+            <button class="tool-btn" data-tool="pan" id="tool-pan" type="button">Pan</button>
+          </div>
+          <div class="tool-group">
+            <span class="tool-label">Tile Type</span>
+            <button class="chip-btn" data-tile="floor" type="button">Floor</button>
+            <button class="chip-btn" data-tile="shelf" type="button">Shelf</button>
+            <button class="chip-btn" data-tile="entry" type="button">Entry</button>
+            <button class="chip-btn" data-tile="checkout" type="button">Checkout</button>
+            <button class="chip-btn" data-tile="blocked" type="button">Blocked</button>
+          </div>
+          <div class="tool-group">
+            <span class="tool-label">Status</span>
+            <button class="chip-btn" data-status="cleaned" type="button">Cleaned</button>
+            <button class="chip-btn" data-status="wet" type="button">Wet</button>
+            <button class="chip-btn" data-status="unknown" type="button">Unknown</button>
+          </div>
+          <div class="tool-group">
+            <span class="tool-label">Brush</span>
+            <input id="brush-size" type="range" min="1" max="4" value="2" />
+          </div>
+        </div>
+
+        <div class="visually-hidden">
+          <select id="paint-mode">
+            <option value="tile" selected>Tile Type</option>
+            <option value="status">Clean Status</option>
+          </select>
+          <select id="paint-tool">
+            <option value="brush" selected>Brush</option>
+            <option value="bucket">Paint Fill</option>
+            <option value="rect">Rectangle Fill</option>
+            <option value="lasso">Lasso Fill</option>
+            <option value="pan">Pan / Move</option>
+          </select>
+          <select id="tile-type">
+            <option value="floor" selected>Floor</option>
+            <option value="shelf">Shelf / Obstacle</option>
+            <option value="entry">Entry</option>
+            <option value="checkout">Checkout</option>
+            <option value="blocked">Blocked</option>
+          </select>
+          <select id="clean-status">
+            <option value="cleaned" selected>Cleaned</option>
+            <option value="wet">Wet</option>
+            <option value="unknown">Unknown</option>
+          </select>
+        </div>
+
+        <div class="layout-actions">
+          <button id="pan-toggle" class="primary" type="button">Pan / Move</button>
+          <label>
+            Grid Columns
+            <input id="grid-cols" type="number" min="8" max="50" value="24" />
+          </label>
+          <label>
+            Grid Rows
+            <input id="grid-rows" type="number" min="6" max="40" value="16" />
+          </label>
+          <label>
+            Preset Layout
+            <select id="preset-layout">
+              <option value="">Select preset</option>
+              <option value="grocery">Grocery / Supercenter</option>
+              <option value="club">Club Warehouse</option>
+              <option value="neighborhood">Neighborhood Market</option>
+            </select>
+          </label>
+          <button id="export-layout" class="ghost" type="button">Export JSON</button>
+          <label class="import-label">
+            Import JSON
+            <input id="import-layout" type="file" accept="application/json" />
+          </label>
+          <button id="toggle-labels" class="ghost" type="button">Aisle Labels: On</button>
+        </div>
+
+        <canvas class="store-grid" id="store-grid" aria-label="Store cleanup grid"></canvas>
+
+        <div class="map-footer">
+          <div class="mini-map">
+            <p class="mini-label">Mini-Map</p>
+            <canvas id="mini-map" width="240" height="160"></canvas>
+          </div>
+          <div class="legend">
+            <span class="legend-dot floor"></span> Floor
+            <span class="legend-dot shelf"></span> Shelf
+            <span class="legend-dot entry"></span> Entry
+            <span class="legend-dot checkout"></span> Checkout
+            <span class="legend-dot blocked"></span> Blocked
+          </div>
+          <div class="legend">
+            <span class="legend-dot cleaned"></span> Cleaned
+            <span class="legend-dot wet"></span> Wet
+            <span class="legend-dot unknown"></span> Unknown
+          </div>
+          <div class="map-actions">
+            <button id="clear-status" class="ghost" type="button">Clear Status</button>
+            <span class="map-stat" id="grid-coverage">Cleaned: 0%</span>
+          </div>
+        </div>
+            <section class="panel">
+        <h3>Layout Export</h3>
+        <p class="muted">Copy or paste JSON to share layouts between stores.</p>
+        <textarea id="layout-json" rows="6" readonly></textarea>
+      </section>
+
+      <section class="grid">
+        <div class="panel">
+          <h3>Safety Checklist</h3>
+          <ul class="checklist">
+            <li>Wet floor signs placed at aisle entry points.</li>
+            <li>All floor zones show cleaned coverage.</li>
+            <li>No wet alerts remain near entries or checkouts.</li>
+          </ul>
+          <div class="alert" id="alert-box">No alerts. Keep scanning.</div>
+        </div>
+        <div class="panel">
+          <h3>Tips</h3>
+          <ul class="tips">
+            <li>Build the layout once, then use Clean Status mode each shift.</li>
+            <li>Mark shelves/blocked areas so coverage ignores them.</li>
+            <li>Use entries and checkout tiles to prioritize safety alerts.</li>
+          </ul>
+        </div>
+      </section>
+
+      <footer class="footer">
+        <p>
+          Layouts are stored locally in the browser. No data is uploaded.
+        </p>
+      </footer>
+    </main>
+
+    <script src="script.js"></script>
+  </body>
+</html>
